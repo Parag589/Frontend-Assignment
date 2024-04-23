@@ -1,0 +1,25 @@
+<h3 class="text-2xl mt-4 font-semibold mb-4">Public Repositories</h3>
+
+
+<ul *ngIf="!loader2" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 card">
+
+
+  <!-- List for public Repositories -->
+  <li *ngFor="let repo of userRepo" class="bg-gray-900 shadow-lg rounded-lg hover:shadow-2xl card transition duration-300  hover:border- 8">
+    <div class="p-4 h-full flex flex-col min-h-12rem">
+
+      <!-- Name and description -->
+      <a target="_blank" [href]="repo.html_url" class="text-xl font-semibold text-blue-500 mb-2">{{ repo.name }}</a>
+      <p class="text-white">{{ repo?.description?.length > 100 ? repo?.description?.slice(0, 100) + "..." : repo?.description }}</p>
+
+      
+       <!--if repo.language is not null -->
+       <div *ngIf="repo.language" class="flex items-end flex-row flex-wrap mt-auto mt-4 non-selectable">
+        <div class="p-2" >
+          <span class="topic"> {{ repo.language }} </span>
+        </div>
+      </div>
+
+    </div>
+  </li>
+</ul>

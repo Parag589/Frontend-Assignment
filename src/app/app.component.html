@@ -1,0 +1,119 @@
+
+<div class="bg-slate-950">
+
+    
+      
+
+  <!-- Starting Form to get GitHub username which will be hidden after API response -->
+  <div *ngIf="!userInfo" class="flex justify-center items-center h-screen bg-gray-900">
+    <div class="p-6 max-w-md bg-white shadow-lg rounded-lg w-100">
+      
+      <div>
+        <svg class="ml-auto mr-auto mb-5 mt-2" height="48"  viewBox="0 0 16 16" version="1.1" width="48"
+            aria-hidden="true">
+            <path fill-rule="evenodd"
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+            </path>
+        </svg>
+    </div>
+
+      <h2 class="text-2xl text-center title font-semibold mb-4">Let the search begin...</h2>
+
+      
+      <form (ngSubmit)="getUserData(githubUsername)" class="mb-4">
+        <div class="mb-4">
+          <label for="username" class="block text-gray-600">GitHub Username:</label>
+          <input type="text" id="username" name="username" [(ngModel)]="githubUsername" required
+            class="w-full px-4 py-2 mt-2 text-gray-800 bg-gray-200 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="mb-4">
+          <label for="RPP" class="block text-gray-600">Repositories per Page</label>
+          <input type="number" max="100" min="3" id="RPP" name="RPP" [(ngModel)]="repoPerPage"
+            class="w-full px-4 py-2  text-gray-800 bg-gray-200 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
+        </div>
+
+        <button type="submit" [disabled]="buttonLoader"
+          class="w-full px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none">
+
+          <ng-container *ngIf="buttonLoader; else searchButton">
+            <app-button-loader></app-button-loader>
+          </ng-container>
+          <ng-template #searchButton>Search</ng-template>
+
+        </button>
+
+
+      </form>
+    </div>
+  </div>
+
+
+
+  <!-- Alternate Header to get updated username or Repositories per page -->
+  <form *ngIf="userInfo" class="flex flex-col md:flex-row md:justify-center bg-gray-950 shadow-gray-50 border-b-slate-500 border-b-2 p-6 sticky-form"
+    (ngSubmit)="getUserData(githubUsername)">
+    <input type="text" id="username" name="username" [(ngModel)]="githubUsername" required
+      class="px-4 py-2 text-gray-800 bg-gray-200 border border-gray-300 rounded-l-lg focus:outline-none focus:border-blue-500  mb-2 md:mb-0 br-sm"
+      placeholder="GitHub Username" />
+    <input type="number" id="RPP" name="RPP" max="100" min="3" [(ngModel)]="repoPerPage"
+      class="px-4 py-2 text-gray-800 bg-gray-200 border border-gray-300 focus:outline-none focus:border-blue-500  mb-2 md:mb-0 br-sm"
+      placeholder="Repositories per Page" />
+    <button type="submit"
+      class="px-4 py-2 text-white bg-blue-500 rounded-r-lg hover:bg-blue-600 focus:outline-none br-sm">
+      Search
+    </button>
+  </form>
+
+
+
+  <!-- User information display -->
+  <div *ngIf="userInfo && !loader1" class="p-6 max-w-screen-lg mx-auto bg-slate-00 shadow-lg rounded-lg mb-4 mt-4">
+
+    <!-- Basic user Info -->
+    <app-user-info [userInfo]="userInfo"></app-user-info>
+    <!-- User Repository display -->
+    <app-repo-section *ngIf="!err1" [loader2]="loader2" [userRepo]="userRepo"></app-repo-section>
+
+    
+    <h2 *ngIf="err1" class="text-2xl title font-semibold mb-4 mt-4 text-center"> {{ errMessage }} </h2>
+
+
+    <!-- loader to indicate page change -->
+    <div *ngIf="loader2" class="mt-20 mb-20">
+      <img style="margin: auto;" src="./assets/loader2.gif">
+    </div>
+
+    <!-- Pagination bar at the end -->
+    <div *ngIf="userRepo && !err1" class="flex justify-between items-center mt-4">
+      <button class="bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none hover:bg-blue-600
+         {{ currentPage === 1 ? 'bg-gray-300 hover:bg-gray-300 cursor-not-allowed' : '' }}"
+        (click)="getRepos(currentPage - 1)" [disabled]="currentPage === 1">
+        Previous
+      </button>
+
+      <div class="flex space-x-2">
+        <ng-container *ngFor="let page of calculateVisiblePageRange(currentPage, totalPages)">
+          <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none
+            {{ currentPage === page ? 'bg-blue-700' : '' }}" (click)="getRepos(page)" [disabled]="currentPage === page"
+            [class.font-semibold]="currentPage === page">
+            {{ page }}
+          </button>
+        </ng-container>
+      </div>
+
+      <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none
+      {{ currentPage === totalPages? 'bg-gray-300 cursor-not-allowed hover:bg-gray-300' : '' }}"
+        (click)="getRepos(currentPage+1)" [disabled]="currentPage === totalPages">
+        Next
+      </button>
+    </div>
+  </div>
+
+
+  <!-- Loader to indicate fetching of user information -->
+  <div *ngIf="loader1" class="mt-20">
+    <img style="margin: auto;" src="./assets/loader1.gif">
+  </div>
+
+</div>
